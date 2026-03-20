@@ -23,7 +23,7 @@ export async function list(req: Request, res: Response, next: NextFunction) {
 
 export async function remove(req: Request, res: Response, next: NextFunction) {
   try {
-    await urlService.deleteUrl(req.params.id, req.user!.sub);
+    await urlService.deleteUrl(req.params.id as string, req.user!.sub);
     res.status(204).send();
   } catch (err) {
     next(err);

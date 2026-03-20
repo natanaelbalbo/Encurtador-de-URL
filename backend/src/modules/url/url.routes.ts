@@ -14,7 +14,7 @@ const apiRateLimit = rateLimiter({ windowMs: 60_000, max: 100 });
  * /api/urls:
  *   post:
  *     tags: [URLs]
- *     summary: Create a shortened URL
+ *     summary: Criar uma URL encurtada
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -28,14 +28,14 @@ const apiRateLimit = rateLimiter({ windowMs: 60_000, max: 100 });
  *               url:
  *                 type: string
  *                 format: uri
- *                 example: https://example.com/very-long-url
+ *                 example: https://exemplo.com/url-muito-longa
  *     responses:
  *       201:
- *         description: URL created successfully
+ *         description: URL criada com sucesso
  *       400:
- *         description: Validation error
+ *         description: Erro de validação
  *       401:
- *         description: Unauthorized
+ *         description: Não autorizado
  */
 router.post('/', apiRateLimit, authenticate, validate(createUrlSchema), urlController.create);
 
@@ -44,7 +44,7 @@ router.post('/', apiRateLimit, authenticate, validate(createUrlSchema), urlContr
  * /api/urls:
  *   get:
  *     tags: [URLs]
- *     summary: List user's URLs with click counts (paginated)
+ *     summary: Listar URLs do usuário com contagem de cliques (paginado)
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -60,9 +60,9 @@ router.post('/', apiRateLimit, authenticate, validate(createUrlSchema), urlContr
  *           default: 10
  *     responses:
  *       200:
- *         description: Paginated list of URLs
+ *         description: Lista paginada de URLs
  *       401:
- *         description: Unauthorized
+ *         description: Não autorizado
  */
 router.get('/', apiRateLimit, authenticate, urlController.list);
 
@@ -71,7 +71,7 @@ router.get('/', apiRateLimit, authenticate, urlController.list);
  * /api/urls/{id}:
  *   delete:
  *     tags: [URLs]
- *     summary: Delete a URL
+ *     summary: Excluir uma URL
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -83,14 +83,46 @@ router.get('/', apiRateLimit, authenticate, urlController.list);
  *           format: uuid
  *     responses:
  *       204:
- *         description: URL deleted successfully
+ *         description: URL excluída com sucesso
  *       401:
- *         description: Unauthorized
+ *         description: Não autorizado
  *       403:
- *         description: Forbidden
+ *         description: Proibido
  *       404:
- *         description: URL not found
+ *         description: URL não encontrada
  */
 router.delete('/:id', apiRateLimit, authenticate, urlController.remove);
+
+/**
+ * @swagger
+ * /api/urls/{id}/stats:
+ *   get:
+ *     tags: [URLs]
+ *     summary: Obter estatísticas de acesso por dia de uma URL
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *       - in: query
+ *         name: days
+ *         schema:
+ *           type: integer
+ *           default: 7
+ *     responses:
+ *       200:
+ *         description: Array com contagem de acessos diários
+ *       401:
+ *         description: Não autorizado
+ *       403:
+ *         description: Proibido
+ *       404:
+ *         description: URL não encontrada
+ */
+router.get('/:id/stats', apiRateLimit, authenticate, urlController.stats);
 
 export default router;

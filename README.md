@@ -181,14 +181,3 @@ Documentação interativa: **Swagger UI** disponível em `/api-docs`.
 - ✅ **Swagger** — Documentação OpenAPI 3.0 com swagger-ui-express
 
 ---
-
-## O que Faria com Mais Tempo
-
-- **Gráfico de acessos por dia** — A tabela `access_logs` já existe; bastaria agrupar por dia e renderizar com Chart.js/Recharts no dashboard
-- **Testes E2E** — Playwright para testar o fluxo completo (register → login → encurtar → clicar → ver contagem)
-- **Custom aliases** — Permitir que o usuário escolha o código da URL (ex: `/meu-link`)
-- **Expiração de URLs** — Campo `expiresAt` na tabela, com job para limpeza periódica
-- **Logs estruturados** — Pino ou Winston para logs em formato JSON, facilitando observabilidade
-- **Monitoramento** — Health-check endpoint completo (DB + Redis status), métricas Prometheus
-- **Deploy em cloud** — Fly.io ou Railway com CI/CD automático
-- **Analytics avançados** — Geolocalização por IP, breakdown por device/browser

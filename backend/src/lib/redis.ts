@@ -10,9 +10,9 @@ export const redis = new Redis(env.REDIS_URL, {
 });
 
 redis.on('error', (err) => {
-  console.error('Redis connection error:', err.message);
+  console.error('Erro de conexão com o Redis:', err.message);
 });
 
 redis.on('connect', () => {
-  console.log('Connected to Redis');
+  console.log('✅ Conectado ao Redis');
 });

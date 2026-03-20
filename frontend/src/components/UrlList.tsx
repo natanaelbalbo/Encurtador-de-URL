@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import api from '../api/client';
+import AccessChart from './AccessChart';
 
 interface Url {
   id: string;
@@ -25,6 +26,7 @@ export default function UrlList({ refreshKey }: UrlListProps) {
   const [meta, setMeta] = useState<Meta | null>(null);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [expandedChart, setExpandedChart] = useState<string | null>(null);
 
   const fetchUrls = useCallback(async () => {
     setLoading(true);
@@ -81,30 +83,42 @@ export default function UrlList({ refreshKey }: UrlListProps) {
 
       <div className="divide-y divide-gray-200">
         {urls.map((url) => (
-          <div key={url.id} className="px-6 py-4 flex items-center justify-between gap-4">
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <a
-                  href={`${window.location.origin}/${url.code}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-indigo-600 font-medium hover:underline"
-                >
-                  /{url.code}
-                </a>
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
-                  {url.clickCount} {url.clickCount === 1 ? 'clique' : 'cliques'}
-                </span>
+          <div key={url.id} className="px-6 py-4">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <a
+                    href={`${window.location.origin}/${url.code}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-indigo-600 font-medium hover:underline"
+                  >
+                    /{url.code}
+                  </a>
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                    {url.clickCount} {url.clickCount === 1 ? 'clique' : 'cliques'}
+                  </span>
+                </div>
+                <p className="text-sm text-gray-500 truncate">{url.originalUrl}</p>
+                <p className="text-xs text-gray-400 mt-1">Criada em {formatDate(url.createdAt)}</p>
               </div>
-              <p className="text-sm text-gray-500 truncate">{url.originalUrl}</p>
-              <p className="text-xs text-gray-400 mt-1">Criada em {formatDate(url.createdAt)}</p>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setExpandedChart(expandedChart === url.id ? null : url.id)}
+                  className="text-sm text-indigo-500 hover:text-indigo-700 cursor-pointer"
+                  title="Ver gráfico de acessos"
+                >
+                  {expandedChart === url.id ? '▲ Fechar' : '📊 Stats'}
+                </button>
+                <button
+                  onClick={() => handleDelete(url.id)}
+                  className="text-sm text-red-500 hover:text-red-700 cursor-pointer"
+                >
+                  Excluir
+                </button>
+              </div>
             </div>
-            <button
-              onClick={() => handleDelete(url.id)}
-              className="text-sm text-red-500 hover:text-red-700 cursor-pointer"
-            >
-              Excluir
-            </button>
+            {expandedChart === url.id && <AccessChart urlId={url.id} />}
           </div>
         ))}
       </div>

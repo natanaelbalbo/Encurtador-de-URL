@@ -13,7 +13,7 @@ const authRateLimit = rateLimiter({ windowMs: 60_000, max: 20 });
  * /api/auth/register:
  *   post:
  *     tags: [Auth]
- *     summary: Register a new user
+ *     summary: Registrar um novo usuário
  *     requestBody:
  *       required: true
  *       content:
@@ -30,11 +30,11 @@ const authRateLimit = rateLimiter({ windowMs: 60_000, max: 20 });
  *                 minLength: 6
  *     responses:
  *       201:
- *         description: User created successfully
+ *         description: Usuário criado com sucesso
  *       400:
- *         description: Validation error
+ *         description: Erro de validação
  *       409:
- *         description: Email already registered
+ *         description: Email já cadastrado
  */
 router.post('/register', authRateLimit, validate(registerSchema), authController.register);
 
@@ -43,7 +43,7 @@ router.post('/register', authRateLimit, validate(registerSchema), authController
  * /api/auth/login:
  *   post:
  *     tags: [Auth]
- *     summary: Login and receive JWT token
+ *     summary: Fazer login e receber token JWT
  *     requestBody:
  *       required: true
  *       content:
@@ -59,7 +59,7 @@ router.post('/register', authRateLimit, validate(registerSchema), authController
  *                 type: string
  *     responses:
  *       200:
- *         description: Login successful
+ *         description: Login realizado com sucesso
  *         content:
  *           application/json:
  *             schema:
@@ -68,7 +68,7 @@ router.post('/register', authRateLimit, validate(registerSchema), authController
  *                 token:
  *                   type: string
  *       401:
- *         description: Invalid credentials
+ *         description: Credenciais inválidas
  */
 router.post('/login', authRateLimit, validate(loginSchema), authController.login);
 

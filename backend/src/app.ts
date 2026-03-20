@@ -11,22 +11,22 @@ import redirectRoutes from './modules/redirect/redirect.routes';
 
 const app = express();
 
-// Security & parsing
+// Segurança & parsing
 app.use(helmet());
 app.use(cors({ origin: env.FRONTEND_URL, credentials: true }));
 app.use(express.json());
 
-// Trust proxy for correct IP in rate limiter
+// Confiar no proxy para IP correto no rate limiter
 app.set('trust proxy', 1);
 
-// Swagger docs
+// Documentação Swagger
 const swaggerSpec = swaggerJsdoc({
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'URL Shortener API',
+      title: 'API Encurtador de URL',
       version: '1.0.0',
-      description: 'A mini URL shortener platform with metrics',
+      description: 'Uma plataforma mini de encurtamento de URLs com métricas',
     },
     servers: [{ url: `http://localhost:${env.PORT}` }],
     components: {
@@ -44,19 +44,19 @@ const swaggerSpec = swaggerJsdoc({
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// API routes
+// Rotas da API
 app.use('/api/auth', authRoutes);
 app.use('/api/urls', urlRoutes);
 
-// Health check
+// Verificação de saúde
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
 
-// Redirect route (must be last — catches /:code)
+// Rota de redirecionamento (deve ser a última — captura /:code)
 app.use('/', redirectRoutes);
 
-// Global error handler
+// Tratamento global de erros
 app.use(errorHandler);
 
 export default app;

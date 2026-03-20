@@ -20,7 +20,7 @@ export function authenticate(req: Request, _res: Response, next: NextFunction): 
   const authHeader = req.headers.authorization;
 
   if (!authHeader?.startsWith('Bearer ')) {
-    throw new AppError(401, 'Missing or invalid authorization token');
+    throw new AppError(401, 'Token de autorização ausente ou inválido');
   }
 
   const token = authHeader.slice(7);
@@ -30,6 +30,6 @@ export function authenticate(req: Request, _res: Response, next: NextFunction): 
     req.user = payload;
     next();
   } catch {
-    throw new AppError(401, 'Invalid or expired token');
+    throw new AppError(401, 'Token inválido ou expirado');
   }
 }

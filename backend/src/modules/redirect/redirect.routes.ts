@@ -11,19 +11,19 @@ const redirectRateLimit = rateLimiter({ windowMs: 60_000, max: 100 });
  * /{code}:
  *   get:
  *     tags: [Redirect]
- *     summary: Redirect to the original URL
+ *     summary: Redirecionar para a URL original
  *     parameters:
  *       - in: path
  *         name: code
  *         required: true
  *         schema:
  *           type: string
- *         description: The short URL code
+ *         description: O código da URL encurtada
  *     responses:
  *       302:
- *         description: Redirects to original URL
+ *         description: Redireciona para a URL original
  *       404:
- *         description: Short URL not found
+ *         description: URL encurtada não encontrada
  */
 router.get('/:code', redirectRateLimit, redirectController.redirect);
 

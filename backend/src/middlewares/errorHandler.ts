@@ -28,7 +28,7 @@ export function errorHandler(
   if (err instanceof ZodError) {
     res.status(400).json({
       error: {
-        message: 'Validation error',
+        message: 'Erro de validação',
         details: err.errors.map((e) => ({
           field: e.path.join('.'),
           message: e.message,
@@ -38,11 +38,11 @@ export function errorHandler(
     return;
   }
 
-  // Prisma unique constraint violation
+  // Violação de constraint unique do Prisma
   if ((err as any).code === 'P2002') {
     const target = (err as any).meta?.target;
     res.status(409).json({
-      error: { message: `A record with this ${target?.[0] || 'field'} already exists` },
+      error: { message: `Já existe um registro com este ${target?.[0] || 'campo'}` },
     });
     return;
   }
@@ -52,6 +52,6 @@ export function errorHandler(
   }
 
   res.status(500).json({
-    error: { message: 'Internal server error' },
+    error: { message: 'Erro interno do servidor' },
   });
 }

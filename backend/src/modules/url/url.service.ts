@@ -5,7 +5,7 @@ import { AppError } from '../../middlewares/errorHandler';
 import { CreateUrlInput, ListUrlsQuery } from './url.schema';
 
 const REDIS_URL_PREFIX = 'url:';
-const REDIS_URL_TTL = 3600; // 1 hour
+const REDIS_URL_TTL = 3600; // 1 hora
 
 export async function createUrl(input: CreateUrlInput, userId: string) {
   const code = generateCode();
@@ -64,27 +64,27 @@ export async function deleteUrl(urlId: string, userId: string) {
   const url = await prisma.url.findUnique({ where: { id: urlId } });
 
   if (!url) {
-    throw new AppError(404, 'URL not found');
+    throw new AppError(404, 'URL não encontrada');
   }
 
   if (url.userId !== userId) {
-    throw new AppError(403, 'You do not have permission to delete this URL');
+    throw new AppError(403, 'Você não tem permissão para excluir esta URL');
   }
 
   await prisma.url.delete({ where: { id: urlId } });
 
-  // Invalidate Redis cache
+  // Invalidar cache do Redis
   await redis.del(`${REDIS_URL_PREFIX}${url.code}`);
 }
 
 export async function resolveUrl(code: string) {
-  // 1. Check Redis cache first
+  // 1. Verificar cache do Redis primeiro
   const cached = await redis.get(`${REDIS_URL_PREFIX}${code}`);
   if (cached) {
     return { originalUrl: cached, fromCache: true };
   }
 
-  // 2. Cache miss — query PostgreSQL
+  // 2. Cache miss — consultar PostgreSQL
   const url = await prisma.url.findUnique({
     where: { code },
     select: { id: true, originalUrl: true },
@@ -94,14 +94,14 @@ export async function resolveUrl(code: string) {
     return null;
   }
 
-  // 3. Store in Redis for next time
+  // 3. Armazenar no Redis para a próxima vez
   await redis.set(`${REDIS_URL_PREFIX}${code}`, url.originalUrl, 'EX', REDIS_URL_TTL);
 
   return { originalUrl: url.originalUrl, fromCache: false };
 }
 
 export async function trackClick(code: string, ip?: string, userAgent?: string) {
-  // Update click count and log access in parallel
+  // Atualizar contagem de cliques e registrar acesso em paralelo
   const url = await prisma.url.findUnique({ where: { code }, select: { id: true } });
   if (!url) return;
 
@@ -118,4 +118,46 @@ export async function trackClick(code: string, ip?: string, userAgent?: string) 
       },
     }),
   ]);
+}
+
+export async function getUrlStats(urlId: string, userId: string, days = 7) {
+  const url = await prisma.url.findUnique({ where: { id: urlId } });
+
+  if (!url) {
+    throw new AppError(404, 'URL não encontrada');
+  }
+
+  if (url.userId !== userId) {
+    throw new AppError(403, 'Você não tem permissão para visualizar as estatísticas desta URL');
+  }
+
+  const since = new Date();
+  since.setDate(since.getDate() - days);
+  since.setHours(0, 0, 0, 0);
+
+  const logs = await prisma.accessLog.findMany({
+    where: {
+      urlId,
+      accessedAt: { gte: since },
+    },
+    select: { accessedAt: true },
+    orderBy: { accessedAt: 'asc' },
+  });
+
+  // Agrupar por dia
+  const statsMap = new Map<string, number>();
+
+  // Preencher todos os dias com 0
+  for (let i = 0; i < days; i++) {
+    const d = new Date(since);
+    d.setDate(d.getDate() + i);
+    statsMap.set(d.toISOString().split('T')[0], 0);
+  }
+
+  for (const log of logs) {
+    const day = log.accessedAt.toISOString().split('T')[0];
+    statsMap.set(day, (statsMap.get(day) || 0) + 1);
+  }
+
+  return Array.from(statsMap.entries()).map(([date, clicks]) => ({ date, clicks }));
 }

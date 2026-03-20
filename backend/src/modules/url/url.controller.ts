@@ -29,3 +29,13 @@ export async function remove(req: Request, res: Response, next: NextFunction) {
     next(err);
   }
 }
+
+export async function stats(req: Request, res: Response, next: NextFunction) {
+  try {
+    const days = req.query.days ? Number(req.query.days) : 7;
+    const result = await urlService.getUrlStats(req.params.id as string, req.user!.sub, days);
+    res.status(200).json(result);
+  } catch (err) {
+    next(err);
+  }
+}

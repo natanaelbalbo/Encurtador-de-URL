@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const createUrlSchema = z.object({
-  url: z.string().url('Invalid URL format'),
+  url: z.string().url('Formato de URL inválido'),
 });
 
 export const listUrlsQuerySchema = z.object({

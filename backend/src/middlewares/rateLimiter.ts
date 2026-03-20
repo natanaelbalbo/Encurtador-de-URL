@@ -30,7 +30,7 @@ export function rateLimiter({ windowMs, max }: RateLimitOptions) {
       });
 
       if (current > max) {
-        throw new AppError(429, 'Too many requests, please try again later');
+        throw new AppError(429, 'Muitas requisições, tente novamente mais tarde');
       }
 
       next();

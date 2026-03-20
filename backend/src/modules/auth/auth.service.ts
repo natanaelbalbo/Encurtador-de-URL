@@ -11,7 +11,7 @@ const TOKEN_EXPIRY = '24h';
 export async function register(input: RegisterInput) {
   const existing = await prisma.user.findUnique({ where: { email: input.email } });
   if (existing) {
-    throw new AppError(409, 'Email already registered');
+    throw new AppError(409, 'Email já cadastrado');
   }
 
   const hashedPassword = await bcrypt.hash(input.password, SALT_ROUNDS);
@@ -30,12 +30,12 @@ export async function register(input: RegisterInput) {
 export async function login(input: LoginInput) {
   const user = await prisma.user.findUnique({ where: { email: input.email } });
   if (!user) {
-    throw new AppError(401, 'Invalid email or password');
+    throw new AppError(401, 'Email ou senha inválidos');
   }
 
   const valid = await bcrypt.compare(input.password, user.password);
   if (!valid) {
-    throw new AppError(401, 'Invalid email or password');
+    throw new AppError(401, 'Email ou senha inválidos');
   }
 
   const token = jwt.sign(

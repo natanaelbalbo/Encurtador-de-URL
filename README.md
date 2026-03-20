@@ -200,4 +200,4 @@ Como o foco desse desafio (5 dias) foi entregar um produto limpo, funcional, mui
 
 ### 4. Mensageria / Assincronismo para Analytics (Arquitetura Orientada a Eventos)
 - **O que é:** Em vez de gravar no PostgreSQL (tabela `access_logs` e incrementar `clickCount`) na mesma hora em que o usuário faz o redirecionamento (o que adiciona milissegundos na resposta), poderíamos jogar esse evento em uma fila (via RabbitMQ, Kafka ou BullMQ usando o próprio Redis) e um worker/background job processaria a gravação no banco de forma assíncrona.
-- **Por que:** O redirecionamento tem que ser "bala" (latência baixíssima para quem clicou no link). Gravar as métricas no banco de dados é secundário e deve ser processado mili-segundos depois para otimizar o tempo de resposta principal da API.
+- **Por que:** O redirecionamento poderia ser ainda mais rápido (latência baixíssima para quem clicou no link). Gravar as métricas no banco de dados é secundário e deve ser processado mili-segundos depois para otimizar o tempo de resposta principal da API.

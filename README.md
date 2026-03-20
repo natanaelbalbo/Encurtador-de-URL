@@ -1,4 +1,4 @@
-# 🔗 URL Shortener — Desafio Fullstack
+# 🔗 URL Shortener - Desafio Fullstack
 
 Mini plataforma de encurtador de URLs com painel de métricas, construída com **TypeScript**, **Node.js**, **PostgreSQL**, **Redis** e **Docker**.
 

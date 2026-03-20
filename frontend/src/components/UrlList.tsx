@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { ExternalLink, BarChart3, Trash2, MousePointerClick, ChevronLeft, ChevronRight, Link, ChevronUp, Calendar, Loader2 } from 'lucide-react';
 import api from '../api/client';
 import AccessChart from './AccessChart';
 
@@ -64,83 +65,130 @@ export default function UrlList({ refreshKey }: UrlListProps) {
   }
 
   if (loading && urls.length === 0) {
-    return <div className="text-center py-8 text-gray-500">Carregando...</div>;
+    return (
+      <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+        <Loader2 className="w-8 h-8 animate-spin mb-3 text-teal-500" />
+        <span className="text-sm font-medium">Carregando suas URLs...</span>
+      </div>
+    );
   }
 
   if (urls.length === 0) {
     return (
-      <div className="text-center py-8 text-gray-500">
-        Nenhuma URL encurtada ainda. Crie a primeira acima!
+      <div className="glass-card rounded-2xl p-12 text-center animate-fade-in">
+        <div className="w-16 h-16 rounded-2xl bg-teal-50 flex items-center justify-center mx-auto mb-4">
+          <Link className="w-8 h-8 text-teal-400" />
+        </div>
+        <p className="text-gray-500 font-medium">Nenhuma URL encurtada ainda</p>
+        <p className="text-sm text-gray-400 mt-1">Crie a primeira usando o formulário acima!</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-lg shadow">
-      <div className="px-6 py-4 border-b border-gray-200">
-        <h2 className="text-lg font-semibold">Suas URLs ({meta?.total || 0})</h2>
+    <div className="glass-card rounded-2xl overflow-hidden animate-slide-up">
+      {/* Header */}
+      <div className="px-6 py-4 border-b border-gray-100/80 flex items-center gap-2">
+        <Link className="w-5 h-5 text-teal-600" />
+        <h2 className="text-lg font-semibold text-gray-800">Suas URLs</h2>
+        <span className="ml-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-teal-100 text-teal-700">
+          {meta?.total || 0}
+        </span>
       </div>
 
-      <div className="divide-y divide-gray-200">
-        {urls.map((url) => (
-          <div key={url.id} className="px-6 py-4">
+      {/* URL Items */}
+      <div className="divide-y divide-gray-100/60">
+        {urls.map((url, index) => (
+          <div
+            key={url.id}
+            className="px-6 py-4 card-hover hover:bg-white/40 transition-colors duration-200"
+            style={{ animationDelay: `${index * 50}ms` }}
+          >
             <div className="flex items-center justify-between gap-4">
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
+                <div className="flex items-center gap-2.5 mb-1.5">
                   <a
                     href={`${window.location.origin}/${url.code}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-indigo-600 font-medium hover:underline"
+                    className="text-teal-600 font-semibold hover:text-teal-700 transition-colors flex items-center gap-1 group"
                   >
                     /{url.code}
+                    <ExternalLink className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
                   </a>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-teal-50 text-teal-700">
+                    <MousePointerClick className="w-3 h-3" />
                     {url.clickCount} {url.clickCount === 1 ? 'clique' : 'cliques'}
                   </span>
                 </div>
                 <p className="text-sm text-gray-500 truncate">{url.originalUrl}</p>
-                <p className="text-xs text-gray-400 mt-1">Criada em {formatDate(url.createdAt)}</p>
+                <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
+                  <Calendar className="w-3 h-3" />
+                  Criada em {formatDate(url.createdAt)}
+                </p>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1">
                 <button
                   onClick={() => setExpandedChart(expandedChart === url.id ? null : url.id)}
-                  className="text-sm text-indigo-500 hover:text-indigo-700 cursor-pointer"
+                  className={`p-2 rounded-lg text-sm transition-all duration-200 cursor-pointer flex items-center gap-1.5 ${
+                    expandedChart === url.id
+                      ? 'bg-teal-100 text-teal-700'
+                      : 'text-gray-400 hover:text-teal-600 hover:bg-teal-50'
+                  }`}
                   title="Ver gráfico de acessos"
                 >
-                  {expandedChart === url.id ? '▲ Fechar' : '📊 Stats'}
+                  {expandedChart === url.id ? (
+                    <>
+                      <ChevronUp className="w-4 h-4" />
+                      <span className="text-xs font-medium hidden sm:inline">Fechar</span>
+                    </>
+                  ) : (
+                    <>
+                      <BarChart3 className="w-4 h-4" />
+                      <span className="text-xs font-medium hidden sm:inline">Stats</span>
+                    </>
+                  )}
                 </button>
                 <button
                   onClick={() => handleDelete(url.id)}
-                  className="text-sm text-red-500 hover:text-red-700 cursor-pointer"
+                  className="p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all duration-200 cursor-pointer"
+                  title="Excluir URL"
                 >
-                  Excluir
+                  <Trash2 className="w-4 h-4" />
                 </button>
               </div>
             </div>
-            {expandedChart === url.id && <AccessChart urlId={url.id} />}
+            {expandedChart === url.id && (
+              <div className="animate-slide-down">
+                <AccessChart urlId={url.id} />
+              </div>
+            )}
           </div>
         ))}
       </div>
 
+      {/* Pagination */}
       {meta && meta.totalPages > 1 && (
-        <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+        <div className="px-6 py-4 border-t border-gray-100/80 flex items-center justify-between">
           <button
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page <= 1}
-            className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 cursor-pointer"
+            className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium border border-gray-200 rounded-xl hover:bg-white hover:border-teal-400 hover:text-teal-600 disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:border-gray-200 disabled:hover:text-gray-500 transition-all duration-200 cursor-pointer text-gray-600"
           >
+            <ChevronLeft className="w-4 h-4" />
             Anterior
           </button>
-          <span className="text-sm text-gray-600">
-            Página {meta.page} de {meta.totalPages}
+          <span className="text-sm text-gray-500 font-medium">
+            Página <span className="text-teal-600 font-semibold">{meta.page}</span> de{' '}
+            <span className="font-semibold">{meta.totalPages}</span>
           </span>
           <button
             onClick={() => setPage((p) => Math.min(meta.totalPages, p + 1))}
             disabled={page >= meta.totalPages}
-            className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 cursor-pointer"
+            className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium border border-gray-200 rounded-xl hover:bg-white hover:border-teal-400 hover:text-teal-600 disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:border-gray-200 disabled:hover:text-gray-500 transition-all duration-200 cursor-pointer text-gray-600"
           >
             Próxima
+            <ChevronRight className="w-4 h-4" />
           </button>
         </div>
       )}

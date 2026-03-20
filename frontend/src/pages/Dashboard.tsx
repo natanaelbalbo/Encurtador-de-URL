@@ -10,7 +10,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div>
+    <div className="space-y-6">
       <UrlForm onCreated={handleUrlCreated} />
       <UrlList refreshKey={refreshKey} />
     </div>

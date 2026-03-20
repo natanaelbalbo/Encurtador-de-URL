@@ -1,5 +1,6 @@
 import { useState, FormEvent } from 'react';
-import { Scissors, Globe, Copy, Check, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { Scissors, Globe, Copy, Check, CheckCircle, Loader2 } from 'lucide-react';
+import { useToast } from '../contexts/ToastContext';
 import api from '../api/client';
 
 interface UrlFormProps {
@@ -9,13 +10,12 @@ interface UrlFormProps {
 export default function UrlForm({ onCreated }: UrlFormProps) {
   const [url, setUrl] = useState('');
   const [shortUrl, setShortUrl] = useState('');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const { showToast } = useToast();
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    setError('');
     setShortUrl('');
     setCopied(false);
     setLoading(true);
@@ -25,13 +25,14 @@ export default function UrlForm({ onCreated }: UrlFormProps) {
       const base = window.location.origin;
       setShortUrl(`${base}/${data.code}`);
       setUrl('');
+      showToast('URL encurtada com sucesso!', 'success');
       onCreated();
     } catch (err: unknown) {
       if (err && typeof err === 'object' && 'response' in err) {
         const axiosErr = err as { response?: { data?: { error?: { message?: string } } } };
-        setError(axiosErr.response?.data?.error?.message || 'Erro ao encurtar URL');
+        showToast(axiosErr.response?.data?.error?.message || 'Erro ao encurtar URL', 'error');
       } else {
-        setError('Erro ao encurtar URL');
+        showToast('Erro ao encurtar URL', 'error');
       }
     } finally {
       setLoading(false);
@@ -41,6 +42,7 @@ export default function UrlForm({ onCreated }: UrlFormProps) {
   async function handleCopy() {
     await navigator.clipboard.writeText(shortUrl);
     setCopied(true);
+    showToast('Link copiado para a área de transferência!', 'success');
     setTimeout(() => setCopied(false), 2000);
   }
 
@@ -80,13 +82,6 @@ export default function UrlForm({ onCreated }: UrlFormProps) {
           )}
         </button>
       </form>
-
-      {error && (
-        <div className="mt-4 p-3 bg-red-50/80 border border-red-200/50 rounded-xl flex items-center gap-2 text-sm text-red-600 animate-slide-down">
-          <AlertCircle className="w-4 h-4 flex-shrink-0" />
-          {error}
-        </div>
-      )}
 
       {shortUrl && (
         <div className="mt-4 p-4 bg-emerald-50/80 border border-emerald-200/50 rounded-xl flex items-center justify-between animate-slide-down">

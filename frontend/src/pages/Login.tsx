@@ -1,30 +1,31 @@
 import { useState, FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '../contexts/ToastContext';
 import { Mail, Lock, LogIn, Loader2 } from 'lucide-react';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
+  const { showToast } = useToast();
   const navigate = useNavigate();
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    setError('');
     setLoading(true);
 
     try {
       await login(email, password);
+      showToast('Login realizado com sucesso!', 'success');
       navigate('/');
     } catch (err: unknown) {
       if (err && typeof err === 'object' && 'response' in err) {
         const axiosErr = err as { response?: { data?: { error?: { message?: string } } } };
-        setError(axiosErr.response?.data?.error?.message || 'Erro ao fazer login');
+        showToast(axiosErr.response?.data?.error?.message || 'Erro ao fazer login', 'error');
       } else {
-        setError('Erro ao fazer login');
+        showToast('Erro ao fazer login', 'error');
       }
     } finally {
       setLoading(false);
@@ -79,12 +80,6 @@ export default function Login() {
               />
             </div>
           </div>
-
-          {error && (
-            <div className="p-3 bg-red-50/80 border border-red-200/50 rounded-xl text-sm text-red-600 animate-slide-down">
-              {error}
-            </div>
-          )}
 
           <button
             type="submit"

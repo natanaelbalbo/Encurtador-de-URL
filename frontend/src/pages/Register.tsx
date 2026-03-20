@@ -1,23 +1,23 @@
 import { useState, FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '../contexts/ToastContext';
 import { Mail, Lock, ShieldCheck, UserPlus, Loader2 } from 'lucide-react';
 
 export default function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
+  const { showToast } = useToast();
   const navigate = useNavigate();
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    setError('');
 
     if (password !== confirmPassword) {
-      setError('As senhas não coincidem');
+      showToast('As senhas não coincidem', 'error');
       return;
     }
 
@@ -25,13 +25,14 @@ export default function Register() {
 
     try {
       await register(email, password);
+      showToast('Conta criada com sucesso!', 'success');
       navigate('/');
     } catch (err: unknown) {
       if (err && typeof err === 'object' && 'response' in err) {
         const axiosErr = err as { response?: { data?: { error?: { message?: string } } } };
-        setError(axiosErr.response?.data?.error?.message || 'Erro ao criar conta');
+        showToast(axiosErr.response?.data?.error?.message || 'Erro ao criar conta', 'error');
       } else {
-        setError('Erro ao criar conta');
+        showToast('Erro ao criar conta', 'error');
       }
     } finally {
       setLoading(false);
@@ -105,12 +106,6 @@ export default function Register() {
               />
             </div>
           </div>
-
-          {error && (
-            <div className="p-3 bg-red-50/80 border border-red-200/50 rounded-xl text-sm text-red-600 animate-slide-down">
-              {error}
-            </div>
-          )}
 
           <button
             type="submit"

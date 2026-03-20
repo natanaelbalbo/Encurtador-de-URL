@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { ExternalLink, BarChart3, Trash2, MousePointerClick, ChevronLeft, ChevronRight, Link, ChevronUp, Calendar, Loader2 } from 'lucide-react';
+import { useToast } from '../contexts/ToastContext';
 import api from '../api/client';
 import AccessChart from './AccessChart';
 
@@ -22,15 +23,19 @@ interface UrlListProps {
   refreshKey: number;
 }
 
+const POLL_INTERVAL = 3000;
+
 export default function UrlList({ refreshKey }: UrlListProps) {
   const [urls, setUrls] = useState<Url[]>([]);
   const [meta, setMeta] = useState<Meta | null>(null);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [expandedChart, setExpandedChart] = useState<string | null>(null);
+  const { showToast } = useToast();
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const fetchUrls = useCallback(async () => {
-    setLoading(true);
+  const fetchUrls = useCallback(async (showLoader = true) => {
+    if (showLoader) setLoading(true);
     try {
       const { data } = await api.get(`/urls?page=${page}&limit=10`);
       setUrls(data.data);
@@ -38,21 +43,31 @@ export default function UrlList({ refreshKey }: UrlListProps) {
     } catch {
       console.error('Failed to fetch URLs');
     } finally {
-      setLoading(false);
+      if (showLoader) setLoading(false);
     }
   }, [page]);
 
   useEffect(() => {
     fetchUrls();
   }, [fetchUrls, refreshKey]);
+  useEffect(() => {
+    pollRef.current = setInterval(() => {
+      fetchUrls(false);
+    }, POLL_INTERVAL);
+
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
+  }, [fetchUrls]);
 
   async function handleDelete(id: string) {
     if (!confirm('Deseja realmente excluir esta URL?')) return;
     try {
       await api.delete(`/urls/${id}`);
+      showToast('URL excluída com sucesso!', 'success');
       fetchUrls();
     } catch {
-      console.error('Failed to delete URL');
+      showToast('Erro ao excluir URL', 'error');
     }
   }
 
@@ -130,11 +145,10 @@ export default function UrlList({ refreshKey }: UrlListProps) {
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => setExpandedChart(expandedChart === url.id ? null : url.id)}
-                  className={`p-2 rounded-lg text-sm transition-all duration-200 cursor-pointer flex items-center gap-1.5 ${
-                    expandedChart === url.id
-                      ? 'bg-teal-100 text-teal-700'
-                      : 'text-gray-400 hover:text-teal-600 hover:bg-teal-50'
-                  }`}
+                  className={`p-2 rounded-lg text-sm transition-all duration-200 cursor-pointer flex items-center gap-1.5 ${expandedChart === url.id
+                    ? 'bg-teal-100 text-teal-700'
+                    : 'text-gray-400 hover:text-teal-600 hover:bg-teal-50'
+                    }`}
                   title="Ver gráfico de acessos"
                 >
                   {expandedChart === url.id ? (

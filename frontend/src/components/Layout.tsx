@@ -1,14 +1,17 @@
 import { ReactNode } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '../contexts/ToastContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { Link2, LogOut } from 'lucide-react';
 
 export default function Layout({ children }: { children: ReactNode }) {
   const { isAuthenticated, logout } = useAuth();
+  const { showToast } = useToast();
   const navigate = useNavigate();
 
   function handleLogout() {
     logout();
+    showToast('Você saiu da sua conta', 'info');
     navigate('/login');
   }
 

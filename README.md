@@ -7,6 +7,8 @@ Mini plataforma de encurtador de URLs com painel de métricas, construída com *
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white)
 ![Redis](https://img.shields.io/badge/Redis-DC382D?logo=redis&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)
+![React](https://img.shields.io/badge/React-61DAFB?logo=react&logoColor=black)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?logo=tailwindcss&logoColor=white)
 
 ---
 
@@ -66,8 +68,7 @@ npm run dev
 | **Cache** | Redis 7 |
 | **Validação** | Zod |
 | **Autenticação** | JWT (jsonwebtoken + bcrypt) |
-| **Frontend** | React 19 + Vite + TypeScript |
-| **Estilização** | Tailwind CSS |
+| **Frontend** | React 19 + Vite + TypeScript + Tailwind CSS v3 + Lucide React |
 | **Documentação API** | Swagger (swagger-ui-express + swagger-jsdoc) |
 | **Testes** | Vitest + Supertest |
 | **CI** | GitHub Actions |

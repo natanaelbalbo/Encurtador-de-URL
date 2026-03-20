@@ -17,18 +17,22 @@ export default function AccessChart({ urlId }: AccessChartProps) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchStats() {
-      setLoading(true);
+    async function fetchStats(showLoader = true) {
+      if (showLoader) setLoading(true);
       try {
         const { data } = await api.get(`/urls/${urlId}/stats?days=7`);
         setStats(data);
       } catch {
         console.error('Failed to fetch stats');
       } finally {
-        setLoading(false);
+        if (showLoader) setLoading(false);
       }
     }
+
     fetchStats();
+
+    const interval = setInterval(() => fetchStats(false), 3000);
+    return () => clearInterval(interval);
   }, [urlId]);
 
   function formatDate(dateStr: string) {

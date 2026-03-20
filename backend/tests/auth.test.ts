@@ -7,13 +7,13 @@ import jwt from 'jsonwebtoken';
 
 const mockPrisma = vi.mocked(prisma);
 
-describe('Auth Endpoints', () => {
+describe('Endpoints de Autenticação', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   describe('POST /api/auth/register', () => {
-    it('should register a new user and return 201', async () => {
+    it('deve registrar um novo usuário e retornar 201', async () => {
       mockPrisma.user.findUnique.mockResolvedValue(null);
       mockPrisma.user.create.mockResolvedValue({
         id: 'uuid-1',
@@ -31,7 +31,7 @@ describe('Auth Endpoints', () => {
       expect(res.body).toHaveProperty('email', 'test@example.com');
     });
 
-    it('should return 409 for duplicate email', async () => {
+    it('deve retornar 409 para e-mail duplicado', async () => {
       mockPrisma.user.findUnique.mockResolvedValue({
         id: 'uuid-1',
         email: 'test@example.com',
@@ -44,10 +44,10 @@ describe('Auth Endpoints', () => {
         .send({ email: 'test@example.com', password: 'password123' });
 
       expect(res.status).toBe(409);
-      expect(res.body.error.message).toContain('already registered');
+      expect(res.body.error.message).toContain('Email já cadastrado');
     });
 
-    it('should return 400 for invalid email', async () => {
+    it('deve retornar 400 para e-mail inválido', async () => {
       const res = await request(app)
         .post('/api/auth/register')
         .send({ email: 'not-an-email', password: 'password123' });
@@ -55,7 +55,7 @@ describe('Auth Endpoints', () => {
       expect(res.status).toBe(400);
     });
 
-    it('should return 400 for short password', async () => {
+    it('deve retornar 400 para senha curta', async () => {
       const res = await request(app)
         .post('/api/auth/register')
         .send({ email: 'test@example.com', password: '123' });
@@ -65,7 +65,7 @@ describe('Auth Endpoints', () => {
   });
 
   describe('POST /api/auth/login', () => {
-    it('should login and return a JWT token', async () => {
+    it('deve fazer login e retornar um token JWT', async () => {
       const hashedPassword = await bcrypt.hash('password123', 10);
       mockPrisma.user.findUnique.mockResolvedValue({
         id: 'uuid-1',
@@ -86,7 +86,7 @@ describe('Auth Endpoints', () => {
       expect(decoded.email).toBe('test@example.com');
     });
 
-    it('should return 401 for wrong password', async () => {
+    it('deve retornar 401 para senha incorreta', async () => {
       const hashedPassword = await bcrypt.hash('password123', 10);
       mockPrisma.user.findUnique.mockResolvedValue({
         id: 'uuid-1',
@@ -102,7 +102,7 @@ describe('Auth Endpoints', () => {
       expect(res.status).toBe(401);
     });
 
-    it('should return 401 for non-existent user', async () => {
+    it('deve retornar 401 para usuário inexistente', async () => {
       mockPrisma.user.findUnique.mockResolvedValue(null);
 
       const res = await request(app)

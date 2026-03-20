@@ -12,13 +12,13 @@ function createToken(userId = 'uuid-1', email = 'test@example.com') {
   return jwt.sign({ sub: userId, email }, process.env.JWT_SECRET!);
 }
 
-describe('URL Endpoints', () => {
+describe('Endpoints de URL', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   describe('POST /api/urls', () => {
-    it('should create a shortened URL and return 201', async () => {
+    it('deve criar uma URL encurtada e retornar 201', async () => {
       const token = createToken();
       mockPrisma.url.create.mockResolvedValue({
         id: 'url-1',
@@ -40,7 +40,7 @@ describe('URL Endpoints', () => {
       expect(res.body).toHaveProperty('originalUrl', 'https://example.com');
     });
 
-    it('should return 401 without auth token', async () => {
+    it('deve retornar 401 sem token de autenticação', async () => {
       const res = await request(app)
         .post('/api/urls')
         .send({ url: 'https://example.com' });
@@ -48,7 +48,7 @@ describe('URL Endpoints', () => {
       expect(res.status).toBe(401);
     });
 
-    it('should return 400 for invalid URL', async () => {
+    it('deve retornar 400 para URL inválida', async () => {
       const token = createToken();
 
       const res = await request(app)
@@ -61,7 +61,7 @@ describe('URL Endpoints', () => {
   });
 
   describe('GET /api/urls', () => {
-    it('should return paginated list of user URLs', async () => {
+    it('deve retornar uma lista paginada de URLs do usuário', async () => {
       const token = createToken();
       const urls = [
         {
@@ -89,14 +89,14 @@ describe('URL Endpoints', () => {
       expect(res.body.data).toHaveLength(1);
     });
 
-    it('should return 401 without auth token', async () => {
+    it('deve retornar 401 sem token de autenticação', async () => {
       const res = await request(app).get('/api/urls');
       expect(res.status).toBe(401);
     });
   });
 
   describe('DELETE /api/urls/:id', () => {
-    it('should delete a URL and return 204', async () => {
+    it('deve deletar uma URL e retornar 204', async () => {
       const token = createToken();
       mockPrisma.url.findUnique.mockResolvedValue({
         id: 'url-1',
@@ -125,7 +125,7 @@ describe('URL Endpoints', () => {
       expect(mockRedis.del).toHaveBeenCalledWith('url:abc12345');
     });
 
-    it('should return 403 when deleting another user URL', async () => {
+    it('deve retornar 403 ao tentar deletar URL de outro usuário', async () => {
       const token = createToken('uuid-1');
       mockPrisma.url.findUnique.mockResolvedValue({
         id: 'url-1',
@@ -144,7 +144,7 @@ describe('URL Endpoints', () => {
       expect(res.status).toBe(403);
     });
 
-    it('should return 404 for non-existent URL', async () => {
+    it('deve retornar 404 para URL inexistente', async () => {
       const token = createToken();
       mockPrisma.url.findUnique.mockResolvedValue(null);
 
@@ -156,8 +156,8 @@ describe('URL Endpoints', () => {
     });
   });
 
-  describe('GET /:code (redirect)', () => {
-    it('should redirect to original URL with 302 (cache miss)', async () => {
+  describe('GET /:code (redirecionamento)', () => {
+    it('deve redirecionar para a URL original com 302 (sem cache)', async () => {
       mockRedis.get.mockResolvedValue(null);
       mockPrisma.url.findUnique
         .mockResolvedValueOnce({
@@ -186,7 +186,7 @@ describe('URL Endpoints', () => {
       expect(mockRedis.set).toHaveBeenCalled();
     });
 
-    it('should redirect using Redis cache (cache hit)', async () => {
+    it('deve redirecionar usando o cache do Redis (com cache)', async () => {
       mockRedis.get.mockResolvedValue('https://cached.com');
       mockPrisma.url.findUnique.mockResolvedValue({
         id: 'url-1',
@@ -204,7 +204,7 @@ describe('URL Endpoints', () => {
       expect(res.headers.location).toBe('https://cached.com');
     });
 
-    it('should return 404 for unknown code', async () => {
+    it('deve retornar 404 para código desconhecido', async () => {
       mockRedis.get.mockResolvedValue(null);
       mockPrisma.url.findUnique.mockResolvedValue(null);
 

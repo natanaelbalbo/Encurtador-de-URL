@@ -179,5 +179,3 @@ Documentação interativa: **Swagger UI** disponível em `/api-docs`.
 - ✅ **Paginação** — Listagem paginada com meta dados (`page`, `limit`, `total`, `totalPages`)
 - ✅ **CI** — GitHub Actions rodando testes do backend e build do frontend
 - ✅ **Swagger** — Documentação OpenAPI 3.0 com swagger-ui-express
-
----

@@ -53,7 +53,7 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
 
-// Rota de redirecionamento (deve ser a última — captura /:code)
+// Rota de redirecionamento (deve ser a última, captura /:code)
 app.use('/', redirectRoutes);
 
 // Tratamento global de erros

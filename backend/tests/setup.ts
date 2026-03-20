@@ -1,6 +1,6 @@
 import { vi, beforeAll, afterAll } from 'vitest';
 
-// Mock environment variables for tests
+// Mock das variáveis de ambiente para testes
 process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/test';
 process.env.REDIS_URL = 'redis://localhost:6379';
 process.env.JWT_SECRET = 'test-secret-key-12345';
@@ -49,7 +49,7 @@ vi.mock('../src/lib/prisma', () => {
 });
 
 beforeAll(() => {
-  // Any global setup
+  // Configuração global para testes
 });
 
 afterAll(() => {

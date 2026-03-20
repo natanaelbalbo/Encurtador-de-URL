@@ -179,3 +179,25 @@ Documentação interativa: **Swagger UI** disponível em `/api-docs`.
 - ✅ **Paginação** — Listagem paginada com meta dados (`page`, `limit`, `total`, `totalPages`)
 - ✅ **CI** — GitHub Actions rodando testes do backend e build do frontend
 - ✅ **Swagger** — Documentação OpenAPI 3.0 com swagger-ui-express
+
+---
+
+## O que faria com mais tempo
+
+Como o foco desse desafio (5 dias) foi entregar um produto limpo, funcional, muito bem testado e na arquitetura proposta, alguns recursos mais complexos ficariam para um segundo momento. Se houvesse mais tempo de desenvolvimento focado na maturidade de produção e negócio da aplicação, eu priorizaria:
+
+### 1. Observabilidade e Monitoramento (APM / Logs Estruturados)
+- **O que é:** Implementação de monitoramento em tempo real com **Prometheus e Grafana** para exibir em tela métricas de saúde da API, latência do banco de dados e quantidade de eventos de *Hit e Miss* de cache no Redis.
+- **Por que:** Atualmente só temos logs de console. O uso de rastreamento robusto (como centralizar logs numa nuvem do **Datadog** ou reportar erros explícitos de ambiente com o **Sentry**) blindaria as refatorações da equipe em longo prazo, fornecendo *trace* rápido para eventuais bugs em produção.
+
+### 2. Deploy Completamente Automatizado na Nuvem (Continuous Deployment)
+- **O que é:** Expandir o workflow de GitHub Actions (que hoje apenas opera garantindo o CI validando lint e testes) para realizar o **CD** (Deploy Contínuo) real.
+- **Como:** A Action construiria o artefato da Imagem Docker da master, faria o push versionado dela pro DockerHub ou AWS ECR e, via Hooks (ou SSH), atualizaria os containers simultaneamente em uma nuvem cloud. Mínima intervenção manual. 
+
+### 3. Geração de QR Code
+- **O que é:** Para **toda** e qualquer URL recém encurtada no dashboard, o aplicativo apresentar, além do novo link encurtado, um QR Code escaneável dinâmico na tela.
+- **Como:** Sendo gerado puramente e muito leve através de Canvas via própria biblioteca no Frontend, ou gerado como imagem (`base64`) pela própria API para o usuário realizar download. É uma "Feature" clássica e muito útil em encurtadores contemporâneos.
+
+### 4. Mensageria / Assincronismo para Analytics (Arquitetura Orientada a Eventos)
+- **O que é:** Em vez de gravar no PostgreSQL (tabela `access_logs` e incrementar `clickCount`) na mesma hora em que o usuário faz o redirecionamento (o que adiciona milissegundos na resposta), poderíamos jogar esse evento em uma fila (via RabbitMQ, Kafka ou BullMQ usando o próprio Redis) e um worker/background job processaria a gravação no banco de forma assíncrona.
+- **Por que:** O redirecionamento tem que ser "bala" (latência baixíssima para quem clicou no link). Gravar as métricas no banco de dados é secundário e deve ser processado mili-segundos depois para otimizar o tempo de resposta principal da API.

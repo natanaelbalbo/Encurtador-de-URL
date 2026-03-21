@@ -1,4 +1,4 @@
-# 🔗 URL Shortener - Desafio Fullstack
+# URL Shortener - Desafio Fullstack
 
 Mini plataforma de encurtador de URLs com painel de métricas, construída com **TypeScript**, **Node.js**, **PostgreSQL**, **Redis** e **Docker**.
 
@@ -85,7 +85,7 @@ Optei pelo Express pela familiaridade e ecossistema maduro. Para um desafio de 5
 O Prisma oferece excelente DX (Developer Experience): schema declarativo, migrations automáticas, type-safety completa que se integra naturalmente com TypeScript, e boa documentação. O trade-off de performance em queries complexas não se aplica neste projeto.
 
 ### 3. `clickCount` desnormalizado na tabela `urls`
-Em vez de fazer `COUNT(*)` na tabela `access_logs` a cada listagem, mantenho um counter desnormalizado. **Trade-off consciente**: a escrita é levemente mais cara (incremento atômico), mas a leitura na listagem é muito mais rápida — especialmente com muitos registros de acesso.
+Em vez de fazer `COUNT(*)` na tabela `access_logs` a cada listagem, mantenho um counter desnormalizado. **Trade-off consciente**: a escrita é levemente mais cara (incremento atômico), mas a leitura na listagem é muito mais rápida, especialmente com muitos registros de acesso.
 
 ### 4. Tabela `access_logs` separada
 Embora o `clickCount` resolva a listagem, manter os logs de acesso individuais permite métricas futuras por dia/hora sem perder granularidade. O índice composto `(urlId, accessedAt)` otimiza queries de analytics.

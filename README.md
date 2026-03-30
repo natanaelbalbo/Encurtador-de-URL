@@ -1,4 +1,4 @@
-# URL Shortener - Desafio Fullstack
+# URL Shortener
 
 Mini plataforma de encurtador de URLs com painel de métricas, construída com **TypeScript**, **Node.js**, **PostgreSQL**, **Redis** e **Docker**.
 
@@ -76,49 +76,6 @@ npm run dev
 
 ---
 
-## Decisões Técnicas
-
-### 1. Express como framework HTTP
-Optei pelo Express pela familiaridade e ecossistema maduro. Para um desafio de 5 dias, a simplicidade e vasta documentação permitem focar na lógica de negócio em vez de configuração do framework.
-
-### 2. Prisma como ORM
-O Prisma oferece excelente DX (Developer Experience): schema declarativo, migrations automáticas, type-safety completa que se integra naturalmente com TypeScript, e boa documentação. O trade-off de performance em queries complexas não se aplica neste projeto.
-
-### 3. `clickCount` desnormalizado na tabela `urls`
-Em vez de fazer `COUNT(*)` na tabela `access_logs` a cada listagem, mantenho um counter desnormalizado. **Trade-off consciente**: a escrita é levemente mais cara (incremento atômico), mas a leitura na listagem é muito mais rápida, especialmente com muitos registros de acesso.
-
-### 4. Tabela `access_logs` separada
-Embora o `clickCount` resolva a listagem, manter os logs de acesso individuais permite métricas futuras por dia/hora sem perder granularidade. O índice composto `(urlId, accessedAt)` otimiza queries de analytics.
-
-### 5. Redis com propósito real (não apenas "para constar")
-
-**Cache de redirecionamento:**
-- Fluxo `GET /:code`: Redis HIT → redireciona sem tocar no banco / MISS → busca no PostgreSQL → grava no Redis → redireciona
-- TTL de 1 hora. Invalidação ao deletar URL
-- Impacto real: em URLs populares, elimina 100% dos hits no banco após o primeiro acesso
-
-**Rate Limiting:**
-- Sliding window counter via `INCR` + `EXPIRE`
-- 100 req/min para API geral, 20 req/min para endpoints de autenticação
-- Headers padrão: `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`
-- Fail-open: se Redis cair, as requisições passam (não bloqueia a aplicação)
-
-### 6. nanoid para short codes
-Gera códigos URL-safe de 8 caracteres com alfabeto customizado (sem caracteres ambíguos como `0/O`, `1/l/I`). Baixa probabilidade de colisão e mais compacto que UUID.
-
-### 7. Prefixo `/api` nas rotas
-Evita colisão entre o redirecionamento `GET /:code` e as rotas da API. O nginx resolve isso em produção fazendo proxy seletivo.
-
-### 8. Multi-stage Dockerfiles
-Imagens finais menores e mais seguras: o build acontece em um estágio e apenas os artefatos de produção vão para a imagem final (sem `devDependencies`, sem código-fonte TypeScript).
-
-### 9. nginx como servidor do frontend
-Serve a SPA (Single Page Application) e faz proxy reverso para o backend. Isso elimina problemas de CORS em produção e permite que o front use caminhos relativos (`/api/...`).
-
-### 10. Zod para validação
-Validação type-safe em runtime, coerente com TypeScript. Usado tanto nos endpoints da API quanto na validação de variáveis de ambiente (`config/env.ts`).
-
----
 
 ## Estrutura do Projeto
 
@@ -180,25 +137,3 @@ Documentação interativa: **Swagger UI** disponível em `/api-docs`.
 - ✅ **Paginação** — Listagem paginada com meta dados (`page`, `limit`, `total`, `totalPages`)
 - ✅ **CI** — GitHub Actions rodando testes do backend e build do frontend
 - ✅ **Swagger** — Documentação OpenAPI 3.0 com swagger-ui-express
-
----
-
-## O que faria com mais tempo
-
-Como o foco desse desafio (5 dias) foi entregar um produto limpo, funcional, muito bem testado e na arquitetura proposta, alguns recursos mais complexos ficariam para um segundo momento. Se houvesse mais tempo de desenvolvimento focado na maturidade de produção e negócio da aplicação, eu priorizaria:
-
-### 1. Observabilidade e Monitoramento (APM / Logs Estruturados)
-- **O que é:** Implementação de monitoramento em tempo real com **Prometheus e Grafana** para exibir em tela métricas de saúde da API, latência do banco de dados e quantidade de eventos de *Hit e Miss* de cache no Redis.
-- **Por que:** Atualmente só temos logs de console. O uso de rastreamento robusto (como centralizar logs numa nuvem do **Datadog** ou reportar erros explícitos de ambiente com o **Sentry**) blindaria as refatorações da equipe em longo prazo, fornecendo *trace* rápido para eventuais bugs em produção.
-
-### 2. Deploy Completamente Automatizado na Nuvem (Continuous Deployment)
-- **O que é:** Expandir o workflow de GitHub Actions (que hoje apenas opera garantindo o CI validando lint e testes) para realizar o **CD** (Deploy Contínuo) real.
-- **Como:** A Action construiria o artefato da Imagem Docker da master, faria o push versionado dela pro DockerHub ou AWS ECR e, via Hooks (ou SSH), atualizaria os containers simultaneamente em uma nuvem cloud. Mínima intervenção manual. 
-
-### 3. Geração de QR Code
-- **O que é:** Para **toda** e qualquer URL recém encurtada no dashboard, o aplicativo apresentar, além do novo link encurtado, um QR Code escaneável dinâmico na tela.
-- **Como:** Sendo gerado puramente e muito leve através de Canvas via própria biblioteca no Frontend, ou gerado como imagem (`base64`) pela própria API para o usuário realizar download. É uma "Feature" clássica e muito útil em encurtadores contemporâneos.
-
-### 4. Mensageria / Assincronismo para Analytics (Arquitetura Orientada a Eventos)
-- **O que é:** Em vez de gravar no PostgreSQL (tabela `access_logs` e incrementar `clickCount`) na mesma hora em que o usuário faz o redirecionamento (o que adiciona milissegundos na resposta), poderíamos jogar esse evento em uma fila (via RabbitMQ, Kafka ou BullMQ usando o próprio Redis) e um worker/background job processaria a gravação no banco de forma assíncrona.
-- **Por que:** O redirecionamento poderia ser ainda mais rápido (latência baixíssima para quem clicou no link). Gravar as métricas no banco de dados é secundário e deve ser processado mili-segundos depois para otimizar o tempo de resposta principal da API.
